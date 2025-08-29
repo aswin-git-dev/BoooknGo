@@ -6,8 +6,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-
-
 const bookingSchema = new mongoose.Schema({
     name : String,
     email : String,
@@ -34,5 +32,5 @@ app.post("/api/bookings", async(req,res) => {
 });
 
 app.listen(5000,()=>{
-    console.log("Server running on 5000");
+    console.log("Server running on port 5000");
 });
