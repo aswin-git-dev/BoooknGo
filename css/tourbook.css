@@ -1,0 +1,180 @@
+/* Booking form background image for visual enhancement */
+.booking-form.tour-bg {
+  background: url('../img/sea shore.jpg') center/cover no-repeat;
+  background-blend-mode: lighten;
+}
+/* ===== FADE IN ANIMATIONS ===== */
+.animate-fade-in {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: all 0.5s ease-out;
+}
+
+.animate-fade-in.loaded,
+.animate-fade-in.ng-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== NG-REPEAT ANIMATIONS ===== */
+.fade-in.ng-enter {
+  opacity: 0;
+  transform: translateY(15px) scale(0.98);
+  transition: all 0.5s ease-out;
+}
+
+.fade-in.ng-enter-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.fade-in.ng-leave {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: all 0.3s ease-in;
+}
+
+.fade-in.ng-leave-active {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+}
+
+.fade-in.ng-move {
+  transition: all 0.4s ease-in-out;
+}
+
+/* ===== TOUR CARD ANIMATIONS ===== */
+.tour-info.ng-enter {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.tour-info.ng-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== BOOKING FORM ANIMATIONS ===== */
+.booking-form.ng-enter {
+  opacity: 0;
+  transform: translateY(25px);
+  transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition-delay: 0.2s;
+}
+
+.booking-form.ng-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== PRICE BOX ANIMATIONS ===== */
+.price-update {
+  animation: priceHighlight 0.5s ease-out;
+}
+
+@keyframes priceHighlight {
+  0% {
+    background-color: #d4edda;
+    transform: scale(1);
+  }
+  50% {
+    background-color: #c3e6cb;
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: #d4edda;
+    transform: scale(1);
+  }
+}
+
+/* ===== FORM FIELD ANIMATIONS ===== */
+.form-field {
+  transition: all 0.3s ease;
+}
+
+.form-field:focus-within {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+}
+
+/* ===== CHECKBOX ANIMATIONS ===== */
+.form-check {
+  transition: all 0.2s ease;
+}
+
+.form-check:hover {
+  transform: translateX(2px);
+}
+
+.form-check-input:checked + .form-check-label {
+  animation: checkboxCheck 0.3s ease-out;
+}
+
+@keyframes checkboxCheck {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ===== SLIDE ANIMATIONS ===== */
+.slide-in.ng-enter {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.slide-in.ng-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ===== LOADING STATES ===== */
+.loading-fade {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.loading-fade.loaded {
+  opacity: 1;
+}
+
+/* ===== STAGGERED FORM ANIMATIONS ===== */
+.form-row > div:nth-child(1) { animation-delay: 0.1s; }
+.form-row > div:nth-child(2) { animation-delay: 0.2s; }
+.form-row > div:nth-child(3) { animation-delay: 0.3s; }
+
+.form-animate {
+  animation: formSlideIn 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes formSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== RESPONSIVE ANIMATIONS ===== */
+@media (max-width: 768px) {
+  .fade-in.ng-enter,
+  .tour-info.ng-enter,
+  .booking-form.ng-enter {
+    transition-duration: 0.4s;
+  }
+  
+  .animate-fade-in {
+    transition-duration: 0.4s;
+  }
+}

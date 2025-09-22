@@ -1,0 +1,211 @@
+/* ===== FADE IN ANIMATIONS ===== */
+.animate-fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.4s ease-in-out;
+}
+
+.animate-fade-in.loaded,
+.animate-fade-in.ng-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== NG-REPEAT ANIMATIONS ===== */
+.fade-in.ng-enter {
+  opacity: 0;
+  transform: translateY(20px) scale(0.96);
+  transition: all 0.4s ease-in-out;
+}
+
+.fade-in.ng-enter-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.fade-in.ng-leave {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: all 0.3s ease-in;
+}
+
+.fade-in.ng-leave-active {
+  opacity: 0;
+  transform: translateY(-15px) scale(0.96);
+}
+
+.fade-in.ng-move {
+  transition: all 0.4s ease-in-out;
+}
+
+/* ===== TRANSPORT CARD ANIMATIONS ===== */
+.transport-card {
+  transition: all 0.3s ease;
+}
+
+.transport-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* ===== STAGGERED ANIMATIONS ===== */
+.fade-in:nth-child(1) { animation-delay: 0.1s; }
+.fade-in:nth-child(2) { animation-delay: 0.2s; }
+.fade-in:nth-child(3) { animation-delay: 0.3s; }
+.fade-in:nth-child(4) { animation-delay: 0.4s; }
+.fade-in:nth-child(5) { animation-delay: 0.5s; }
+.fade-in:nth-child(6) { animation-delay: 0.6s; }
+
+/* ===== FILTER ANIMATIONS ===== */
+.filter-change {
+  animation: filterHighlight 0.4s ease-out;
+}
+
+@keyframes filterHighlight {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(0,123,255,0.1);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* ===== SEARCH FORM ANIMATIONS ===== */
+.search-form {
+  animation: slideInFromTop 0.5s ease-out;
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== BADGE ANIMATIONS ===== */
+.badge {
+  transition: all 0.2s ease;
+  animation: badgePulse 2s infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.badge:hover {
+  animation: none;
+  transform: scale(1.1);
+}
+
+/* ===== SLIDE ANIMATIONS ===== */
+.slide-in.ng-enter {
+  opacity: 0;
+  transform: translateX(-80px);
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.slide-in.ng-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-in.ng-leave {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.3s ease-in;
+}
+
+.slide-in.ng-leave-active {
+  opacity: 0;
+  transform: translateX(80px);
+}
+
+/* ===== SCALE ANIMATIONS ===== */
+.scale-in.ng-enter {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.4s ease-out;
+}
+
+.scale-in.ng-enter-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.scale-in.ng-leave {
+  opacity: 1;
+  transform: scale(1);
+  transition: all 0.3s ease-in;
+}
+
+.scale-in.ng-leave-active {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* ===== LOADING STATES ===== */
+.loading-fade {
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.loading-fade.loaded {
+  opacity: 1;
+}
+
+/* ===== NO RESULTS ANIMATION ===== */
+.no-results {
+  animation: fadeInBounce 0.6s ease-out;
+}
+
+@keyframes fadeInBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ===== FORM FIELD FOCUS ANIMATIONS ===== */
+.form-control:focus,
+.form-select:focus {
+  transition: all 0.3s ease;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0,123,255,0.2);
+}
+
+/* ===== RESPONSIVE ANIMATIONS ===== */
+@media (max-width: 768px) {
+  .fade-in.ng-enter,
+  .slide-in.ng-enter,
+  .scale-in.ng-enter {
+    transition-duration: 0.3s;
+  }
+  
+  .animate-fade-in {
+    transition-duration: 0.3s;
+  }
+  
+  .transport-card:hover {
+    transform: translateY(-2px) scale(1.01);
+  }
+}

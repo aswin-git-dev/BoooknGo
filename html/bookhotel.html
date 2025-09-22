@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="travelApp">
+<head>
+  <meta charset="UTF-8">
+  <title>Hotel Booking</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+</head>
+    <body ng-controller="BookingController as vm" class="bg-light" animate-on-load>
+    
+      <header class="bg-primary text-white text-center py-4 mb-4 shadow animate__animated animate__fadeInDown">
+        <div class="container">
+          <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
+            <div class="d-flex align-items-center mb-2 mb-md-0">
+              <i class="bi bi-building-fill-check display-5 me-2"></i>
+              <h1 class="mb-0">BookNGo</h1>
+            </div>
+            <nav class="mt-2 mt-md-0">
+              <a href="tourbook.html" class="btn btn-outline-light btn-sm me-2"><i class="bi bi-map"></i> Tour Info</a>
+              <a href="booking.html" class="btn btn-outline-light btn-sm me-2"><i class="bi bi-calendar2-check"></i> Booking</a>
+              <a href="transport.html" class="btn btn-outline-light btn-sm me-2"><i class="bi bi-bus-front"></i> Transport</a>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      <div class="container animate__animated animate__fadeInUp">
+        <div class="mb-4">
+          <img src="../img/private beach.jpg" alt="Private Beach" class="img-fluid rounded shadow" style="max-height: 260px; width: 100%; object-fit: cover;">
+        </div>
+  <div class="card p-4 shadow-lg mb-4 border-0 animate__animated animate__fadeIn" style="background: url('../img/Island.jpg') center/cover no-repeat; background-blend-mode: lighten;">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-building-fill-check text-primary display-6 me-2"></i>
+            <h4 class="mb-0">Hotel Booking</h4>
+          </div>
+          <div class="mb-3">
+            <span class="badge bg-info text-dark me-2"><i class="bi bi-building"></i> {{vm.form.hotel}}</span>
+            <span class="badge bg-secondary"><i class="bi bi-geo-alt"></i> {{vm.form.city}}</span>
+          </div>
+          <form ng-submit="vm.submitBooking()" class="row g-3 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label">Full Name</label>
+              <input type="text" ng-model="vm.form.name" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Email</label>
+              <input type="email" ng-model="vm.form.email" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Phone</label>
+              <input type="text" ng-model="vm.form.phone" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">City</label>
+              <input type="text" ng-model="vm.form.city" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Check-in Date</label>
+              <input type="date" ng-model="vm.form.date" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Hotel</label>
+              <input type="text" ng-model="vm.form.hotel" class="form-control" required>
+            </div>
+            <div class="col-md-12 d-grid mt-3">
+              <button type="submit" class="btn btn-success btn-lg animate__animated animate__pulse animate__infinite"><i class="bi bi-check-circle"></i> Confirm Booking</button>
+            </div>
+          </form>
+          <div ng-if="vm.successMessage" class="alert alert-success mt-3 animate__animated animate__fadeInDown">
+            {{ vm.successMessage }}
+          </div>
+          <div ng-if="vm.errorMessage" class="alert alert-danger mt-3 animate__animated animate__fadeInDown">
+            {{ vm.errorMessage }}
+          </div>
+        </div>
+        
+          <script>
+           angular.module("travelApp", [])
+  .controller("BookingController", function($http, $location) {
+    var vm = this;
+    vm.form = {};
+
+    var params = $location.search();
+    if (params.hotel) vm.form.hotel = params.hotel;
+    if (params.city) vm.form.city = params.city;
+
+    vm.submitBooking = function() {
+      $http.post("http://localhost:5000/api/bookings", vm.form)
+        .then(function(response) {
+          vm.successMessage = "Booking confirmed!";
+          vm.errorMessage = "";
+          vm.form = {};
+        })
+        .catch(function(err) {
+          vm.errorMessage = "Something went wrong. Please try again.";
+          vm.successMessage = "";
+        });
+    };
+  });
+          </script>
+    </body>
+    </html>
