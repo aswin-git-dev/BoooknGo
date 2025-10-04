@@ -5,6 +5,7 @@
   <title>Hotel Booking</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
 </head>
     <body ng-controller="BookingController as vm" class="bg-light" animate-on-load>
@@ -29,7 +30,9 @@
         <div class="mb-4">
           <img src="../img/private beach.jpg" alt="Private Beach" class="img-fluid rounded shadow" style="max-height: 260px; width: 100%; object-fit: cover;">
         </div>
-  <div class="card p-4 shadow-lg mb-4 border-0 animate__animated animate__fadeIn" style="background: url('../img/Island.jpg') center/cover no-repeat; background-blend-mode: lighten;">
+  <div class="card p-4 shadow-lg mb-4 border-0 animate__animated animate__fadeIn position-relative" style="background: none;">
+    <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:url('../img/Island.jpg') center/cover no-repeat;opacity:0.08;z-index:0;"></div>
+    <div style="position:relative;z-index:1;">
           <div class="d-flex align-items-center mb-3">
             <i class="bi bi-building-fill-check text-primary display-6 me-2"></i>
             <h4 class="mb-0">Hotel Booking</h4>
@@ -38,64 +41,104 @@
             <span class="badge bg-info text-dark me-2"><i class="bi bi-building"></i> {{vm.form.hotel}}</span>
             <span class="badge bg-secondary"><i class="bi bi-geo-alt"></i> {{vm.form.city}}</span>
           </div>
-          <form ng-submit="vm.submitBooking()" class="row g-3 align-items-end">
+          <div class="row">
+            <!-- Filters (left) -->
             <div class="col-md-4">
-              <label class="form-label">Full Name</label>
-              <input type="text" ng-model="vm.form.name" class="form-control" required>
+              <div class="card p-3 mb-4">
+                <h5>Filter Hotels</h5>
+                <div class="mb-3">
+                  <label class="form-label">City</label>
+                  <select ng-model="vm.filter.city" class="form-select">
+                    <option value="">All Cities</option>
+                    <option ng-repeat="city in vm.cities" value="{{city}}">{{city}}</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Max Price</label>
+                  <input type="number" ng-model="vm.filter.price" class="form-control" placeholder="No limit">
+                </div>
+                <button class="btn btn-primary w-100" ng-click="vm.applyFilter()">Apply Filter</button>
+                <button class="btn btn-secondary w-100 mt-2" ng-click="vm.clearFilter()">Clear Filter</button>
+              </div>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Email</label>
-              <input type="email" ng-model="vm.form.email" class="form-control" required>
+            <!-- Hotel Cards (right) -->
+            <div class="col-md-8">
+              <div class="row">
+                <div class="col-md-6 mb-4" ng-repeat="hotel in vm.filteredHotels">
+                  <div class="card h-100 shadow-sm">
+                    <img ng-src="{{hotel.image}}" class="card-img-top" alt="{{hotel.name}}" style="height:180px;object-fit:cover;">
+                    <div class="card-body">
+                      <h5 class="card-title">{{hotel.name}}</h5>
+                      <p class="card-text mb-1"><i class="bi bi-geo-alt"></i> {{hotel.city}}</p>
+                      <p class="card-text mb-1"><i class="bi bi-currency-rupee"></i> {{hotel.price}}</p>
+                      <p class="card-text">{{hotel.description}}</p>
+                      <button class="btn btn-success w-100 mt-2" ng-click="vm.bookHotel(hotel)"><i class="bi bi-check-circle"></i> Book</button>
+                    </div>
+                  </div>
+                </div>
+                <div ng-if="vm.filteredHotels.length === 0" class="text-center text-muted mt-5">
+                  <i class="bi bi-exclamation-circle"></i> No hotels found for selected filters.
+                </div>
+              </div>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Phone</label>
-              <input type="text" ng-model="vm.form.phone" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">City</label>
-              <input type="text" ng-model="vm.form.city" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Check-in Date</label>
-              <input type="date" ng-model="vm.form.date" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Hotel</label>
-              <input type="text" ng-model="vm.form.hotel" class="form-control" required>
-            </div>
-            <div class="col-md-12 d-grid mt-3">
-              <button type="submit" class="btn btn-success btn-lg animate__animated animate__pulse animate__infinite"><i class="bi bi-check-circle"></i> Confirm Booking</button>
-            </div>
-          </form>
-          <div ng-if="vm.successMessage" class="alert alert-success mt-3 animate__animated animate__fadeInDown">
-            {{ vm.successMessage }}
-          </div>
-          <div ng-if="vm.errorMessage" class="alert alert-danger mt-3 animate__animated animate__fadeInDown">
-            {{ vm.errorMessage }}
-          </div>
+      </div>
+    </div>
         </div>
         
           <script>
            angular.module("travelApp", [])
-  .controller("BookingController", function($http, $location) {
+  .controller("BookingController", function($scope, $window) {
     var vm = this;
-    vm.form = {};
+    // Static hotel data
+    vm.hotels = [
+      {
+        name: "Sea View Resort",
+        city: "Goa",
+        price: 3500,
+        image: "../img/sea shore.jpg",
+        description: "Beachfront resort with pool and spa."
+      },
+      {
+        name: "Mountain Escape",
+        city: "Ooty",
+        price: 2500,
+        image: "../img/mountain beach.jpg",
+        description: "Cozy stay in the hills with scenic views."
+      },
+      {
+        name: "Island Paradise",
+        city: "Andaman",
+        price: 5000,
+        image: "../img/Island.jpg",
+        description: "Luxury island resort with private beach."
+      },
+      {
+        name: "City Comfort",
+        city: "Chennai",
+        price: 1800,
+        image: "../img/private beach.jpg",
+        description: "Modern hotel in the heart of the city."
+      }
+    ];
+    vm.cities = Array.from(new Set(vm.hotels.map(h => h.city)));
+    vm.filter = { city: '', price: '' };
+    vm.filteredHotels = vm.hotels.slice();
 
-    var params = $location.search();
-    if (params.hotel) vm.form.hotel = params.hotel;
-    if (params.city) vm.form.city = params.city;
-
-    vm.submitBooking = function() {
-      $http.post("http://localhost:5000/api/bookings", vm.form)
-        .then(function(response) {
-          vm.successMessage = "Booking confirmed!";
-          vm.errorMessage = "";
-          vm.form = {};
-        })
-        .catch(function(err) {
-          vm.errorMessage = "Something went wrong. Please try again.";
-          vm.successMessage = "";
-        });
+    vm.applyFilter = function() {
+      vm.filteredHotels = vm.hotels.filter(function(hotel) {
+        var cityMatch = !vm.filter.city || hotel.city === vm.filter.city;
+        var priceMatch = !vm.filter.price || hotel.price <= vm.filter.price;
+        return cityMatch && priceMatch;
+      });
+    };
+    vm.clearFilter = function() {
+      vm.filter = { city: '', price: '' };
+      vm.filteredHotels = vm.hotels.slice();
+    };
+    vm.bookHotel = function(hotel) {
+      var selectedHotel = Object.assign({}, hotel);
+      localStorage.setItem('selectedHotel', JSON.stringify(selectedHotel));
+      $window.location.href = 'bookhotel-form.html';
     };
   });
           </script>

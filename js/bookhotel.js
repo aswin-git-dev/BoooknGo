@@ -39,6 +39,90 @@ const transportSchema = new mongoose.Schema({
 
 const Transport = mongoose.model("Transport", transportSchema);
 
+// User Schema
+const userSchema = new mongoose.Schema({
+    username: String,
+    password: String,
+    email: String,
+    createdAt: { type: Date, default: Date.now }
+});
+const User = mongoose.model("User", userSchema);
+
+// Booked Tour Schema
+const bookedTourSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    phone: String,
+    tourName: String,
+    roomName: String,
+    transportMode: String,
+    total: Number,
+    userid: String,
+    createdAt: { type: Date, default: Date.now }
+});
+const BookedTour = mongoose.model("BookedTour", bookedTourSchema, "bookedtours");
+
+// Booked Hotel Schema
+const bookedHotelSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    phone: String,
+    hotelName: String,
+    city: String,
+    price: Number,
+    userid: String,
+    createdAt: { type: Date, default: Date.now }
+});
+const BookedHotel = mongoose.model("BookedHotel", bookedHotelSchema, "bookedhotels");
+// USER ENDPOINTS
+app.post("/api/users", async (req, res) => {
+    try {
+        const newUser = new User(req.body);
+        await newUser.save();
+        res.status(201).json(newUser);
+    } catch (err) {
+        res.status(500).json({ message: "Error", err });
+    }
+});
+
+// BOOKED TOUR ENDPOINTS
+app.post("/api/bookedtours", async (req, res) => {
+    try {
+        const newBookedTour = new BookedTour(req.body);
+        await newBookedTour.save();
+        res.status(201).json({ message: "Booked Tour Saved", bookedTour: newBookedTour });
+    } catch (err) {
+        res.status(500).json({ message: "Error", err });
+    }
+});
+app.get("/api/bookedtours", async (req, res) => {
+    try {
+        const tours = await BookedTour.find();
+        res.json(tours);
+    } catch (err) {
+        res.status(500).json({ message: "Error", err });
+    }
+});
+
+// BOOKED HOTEL ENDPOINTS
+app.post("/api/bookedhotels", async (req, res) => {
+    try {
+        const newBookedHotel = new BookedHotel(req.body);
+        await newBookedHotel.save();
+        res.status(201).json({ message: "Booked Hotel Saved", bookedHotel: newBookedHotel });
+    } catch (err) {
+        res.status(500).json({ message: "Error", err });
+    }
+});
+app.get("/api/bookedhotels", async (req, res) => {
+    try {
+        const hotels = await BookedHotel.find();
+        res.json(hotels);
+    } catch (err) {
+        res.status(500).json({ message: "Error", err });
+    }
+});
+
 // CREATE
 app.post("/api/bookings", async (req, res) => {
     try {

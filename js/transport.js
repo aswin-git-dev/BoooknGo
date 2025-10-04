@@ -2,8 +2,36 @@
 
 angular.module('travelApp')
 
-  .controller('TransportController', function($http, AnimationService) {
+  .controller('TransportController', function($http) {
     var vm = this;
+
+    // Tab state for AngularJS navigation
+    vm.activeTab = 'local';
+    // Local transport mock data
+    vm.localTransports = [
+      { name: 'City Bus 101', src: 'Central', dest: 'North', mode: 'bus', price: 20 },
+      { name: 'Metro Express', src: 'East', dest: 'West', mode: 'train', price: 35 },
+      { name: 'Bus 202', src: 'South', dest: 'Central', mode: 'bus', price: 25 },
+      { name: 'Rapid Train', src: 'North', dest: 'South', mode: 'train', price: 40 },
+      { name: 'Mini Bus', src: 'West', dest: 'East', mode: 'bus', price: 18 }
+    ];
+    // Outskirt: city to city
+    vm.outskirtTransports = [
+      { name: 'Intercity Bus', src: 'Chennai', dest: 'Pondicherry', mode: 'bus', price: 150 },
+      { name: 'Regional Train', src: 'Madurai', dest: 'Trichy', mode: 'train', price: 120 },
+      { name: 'Express Bus', src: 'Coimbatore', dest: 'Salem', mode: 'bus', price: 170 },
+      { name: 'Superfast Train', src: 'Erode', dest: 'Bangalore', mode: 'train', price: 200 }
+    ];
+    // Rental: scooty / two-wheeler / car rental with cost/hr
+    vm.rentalTransports = [
+      { name: 'Scooty', type: 'two-wheeler', price: 60 },
+      { name: 'Bike', type: 'two-wheeler', price: 80 },
+      { name: 'Sedan Car', type: 'car', price: 200 },
+      { name: 'SUV Car', type: 'car', price: 300 },
+      { name: 'Mini Van', type: 'van', price: 250 }
+    ];
+    vm.localFilter = { src: '', dest: '', mode: '' };
+    vm.outskirtFilter = { src: '', dest: '', mode: '' };
 
     vm.search = { from: '', to: '' };
     vm.filterType = '';
@@ -13,17 +41,30 @@ angular.module('travelApp')
     vm.successMessage = '';
     vm.errorMessage = '';
 
-    // Fetch all transports
+    // Fetch all transports (for backend, not used in mock display)
     vm.loadTransports = function() {
       $http.get('http://localhost:5000/api/transports')
         .then(function(res) {
           vm.transports = res.data;
         });
     };
-    vm.loadTransports();
+    // vm.loadTransports(); // Only needed for backend, not mock data
 
     // Create transport booking
     vm.submitTransport = function() {
+      // Basic input validation
+      if (!vm.form.name || !vm.form.type || !vm.form.from || !vm.form.to || !vm.form.time) {
+        vm.errorMessage = 'All fields are required.';
+        vm.successMessage = '';
+        return;
+      }
+      // Simple time format check (e.g., HH:MM AM/PM)
+      var timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9] ?([AaPp][Mm])$/;
+      if (!timeRegex.test(vm.form.time)) {
+        vm.errorMessage = 'Invalid time format. Use HH:MM AM/PM.';
+        vm.successMessage = '';
+        return;
+      }
       if (vm.editId) {
         // Update
         $http.put('http://localhost:5000/api/transports/' + vm.editId, vm.form)
@@ -35,6 +76,35 @@ angular.module('travelApp')
             vm.loadTransports();
           })
           .catch(function() {
+          // Tab state for AngularJS navigation
+          vm.activeTab = 'local';
+          // Local transport mock data
+            // Local: part of city to part of city
+            vm.localTransports = [
+              { name: 'City Bus 101', src: 'Central', dest: 'North', mode: 'bus', price: 20 },
+              { name: 'Metro Express', src: 'East', dest: 'West', mode: 'train', price: 35 },
+              { name: 'Bus 202', src: 'South', dest: 'Central', mode: 'bus', price: 25 },
+              { name: 'Rapid Train', src: 'North', dest: 'South', mode: 'train', price: 40 },
+              { name: 'Mini Bus', src: 'West', dest: 'East', mode: 'bus', price: 18 }
+            ];
+            // Outskirt: city to city
+            vm.outskirtTransports = [
+              { name: 'Intercity Bus', src: 'Chennai', dest: 'Pondicherry', mode: 'bus', price: 150 },
+              { name: 'Regional Train', src: 'Madurai', dest: 'Trichy', mode: 'train', price: 120 },
+              { name: 'Express Bus', src: 'Coimbatore', dest: 'Salem', mode: 'bus', price: 170 },
+              { name: 'Superfast Train', src: 'Erode', dest: 'Bangalore', mode: 'train', price: 200 }
+            ];
+            // Rental: scooty / two-wheeler / car rental with cost/hr
+            vm.rentalTransports = [
+              { name: 'Scooty', type: 'two-wheeler', price: 60 },
+              { name: 'Bike', type: 'two-wheeler', price: 80 },
+              { name: 'Sedan Car', type: 'car', price: 200 },
+              { name: 'SUV Car', type: 'car', price: 300 },
+              { name: 'Mini Van', type: 'van', price: 250 }
+            ];
+            vm.localFilter = { src: '', dest: '', mode: '' };
+            vm.outskirtFilter = { src: '', dest: '', mode: '' };
+
             vm.errorMessage = 'Update failed.';
             vm.successMessage = '';
           });
