@@ -7,8 +7,10 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/transport.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular-animate.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body ng-controller="TransportController as vm" class="bg-light" animate-on-load>
     <header class="bg-primary text-white text-center py-4 mb-4 shadow animate__animated animate__fadeInDown">
@@ -18,10 +20,14 @@
             <i class="bi bi-building-fill-check display-5 me-2"></i>
             <h1 class="mb-0">BookNGo</h1>
           </div>
-          <nav class="mt-2 mt-md-0">
-            <a href="tourbook.html" class="btn btn-outline-light btn-sm me-2"><i class="bi bi-map"></i> Tour Info</a>
-            <a href="booking.html" class="btn btn-outline-light btn-sm me-2"><i class="bi bi-calendar2-check"></i> Booking</a>
-            <a href="transport.html" class="btn btn-outline-light btn-sm me-2"><i class="bi bi-bus-front"></i> Transport</a>
+          <nav class="mt-2 mt-md-0 d-flex flex-wrap gap-2">
+            <a href="tourbook.html" class="btn btn-outline-light btn-sm"><i class="bi bi-map"></i> Tour Info</a>
+            <a href="bookhotel.html" class="btn btn-outline-light btn-sm"><i class="bi bi-calendar2-check"></i> Booking</a>
+            <a href="transport.html" class="btn btn-outline-light btn-sm"><i class="bi bi-bus-front"></i> Transport</a>
+            <button class="btn btn-light btn-sm" ng-click="vm.activeTab = 'local'" title="Go to Local Transport"><i class="bi bi-geo"></i> Local</button>
+            <button class="btn btn-light btn-sm" ng-click="vm.activeTab = 'outskirt'" title="Go to Intra-City"><i class="bi bi-arrow-left-right"></i> Intra-City</button>
+            <button class="btn btn-light btn-sm" ng-click="vm.activeTab = 'rental'" title="Go to Rental"><i class="bi bi-car-front"></i> Rental</button>
+            <button class="btn btn-light btn-sm" ng-click="vm.activeTab = 'flights'" title="Go to Flights"><i class="bi bi-airplane"></i> Flights</button>
           </nav>
         </div>
       </div>
@@ -44,10 +50,13 @@
               <a class="nav-link" ng-class="{active: vm.activeTab === 'local'}" ng-click="vm.activeTab = 'local'">Local</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" ng-class="{active: vm.activeTab === 'outskirt'}" ng-click="vm.activeTab = 'outskirt'">Outskirt</a>
+              <a class="nav-link" ng-class="{active: vm.activeTab === 'outskirt'}" ng-click="vm.activeTab = 'outskirt'">Intra-City</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" ng-class="{active: vm.activeTab === 'rental'}" ng-click="vm.activeTab = 'rental'">Rental</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" ng-class="{active: vm.activeTab === 'flights'}" ng-click="vm.activeTab = 'flights'">Flights</a>
             </li>
           </ul>
           <div ng-show="vm.activeTab === 'local'">
@@ -69,6 +78,9 @@
                 </select>
               </div>
             </div>
+            <div class="mb-3">
+              <div id="maduraiMap" style="height: 250px; width: 100%; border-radius: 8px; border: 1px solid #ccc;"></div>
+            </div>
             <div class="row">
               <div class="col-md-6 mb-3" ng-repeat="t in (vm.localFilter.src || vm.localFilter.dest || vm.localFilter.mode ? (vm.localTransports | filter:vm.localFilter) : vm.localTransports)">
                 <div class="card h-100 shadow-sm">
@@ -76,8 +88,16 @@
                     <h5 class="card-title">{{t.name}}</h5>
                     <p class="card-text mb-1"><i class="bi bi-geo-alt"></i> {{t.src}} → {{t.dest}}</p>
                     <p class="card-text mb-1"><strong>Mode:</strong> {{t.mode}}</p>
+                    <p class="card-text mb-1"><strong>Stops:</strong>
+                      <span ng-if="t.stops && t.stops.length">
+                        <span ng-repeat="s in t.stops">
+                          {{$index > 0 ? ', ' : ''}}{{s.name}}
+                        </span>
+                      </span>
+                      <span ng-if="!t.stops || !t.stops.length">N/A</span>
+                    </p>
                     <p class="card-text mb-1"><strong>Price:</strong> ₹{{t.price}}</p>
-                    <button class="btn btn-success w-100 mt-2" ng-click="vm.bookTransport(t)"><i class="bi bi-check-circle"></i> Book</button>
+                    <button class="btn btn-success w-100 mt-2" ng-click="vm.openBookingModal(t, 'local')"><i class="bi bi-check-circle"></i> Book</button>
                   </div>
                 </div>
               </div>
@@ -113,7 +133,7 @@
                     <p class="card-text mb-1"><i class="bi bi-geo-alt"></i> {{t.src}} → {{t.dest}}</p>
                     <p class="card-text mb-1"><strong>Mode:</strong> {{t.mode}}</p>
                     <p class="card-text mb-1"><strong>Price:</strong> ₹{{t.price}}</p>
-                    <button class="btn btn-success w-100 mt-2" ng-click="vm.bookTransport(t)"><i class="bi bi-check-circle"></i> Book</button>
+                    <button class="btn btn-success w-100 mt-2" ng-click="vm.openBookingModal(t, 'outskirt')"><i class="bi bi-check-circle"></i> Book</button>
                   </div>
                 </div>
               </div>
@@ -129,13 +149,31 @@
                   <div class="card-body">
                     <h5 class="card-title">{{r.name}}</h5>
                     <p class="card-text mb-1"><strong>Type:</strong> {{r.type}}</p>
-                    <p class="card-text mb-1"><strong>Price per hour:</strong> ₹{{r.price}}</p>
-                    <button class="btn btn-success w-100 mt-2" ng-click="vm.bookTransport(r)"><i class="bi bi-check-circle"></i> Book</button>
+                    <p class="card-text mb-1"><strong>Price per hour:</strong> 	{{r.price}}</p>
+                    <button class="btn btn-success w-100 mt-2" ng-click="vm.openBookingModal(r, 'rental')"><i class="bi bi-check-circle"></i> Book</button>
                   </div>
                 </div>
               </div>
               <div ng-if="vm.rentalTransports.length === 0" class="text-center text-muted mt-3">
                 <i class="bi bi-exclamation-circle"></i> No rental transports found.
+              </div>
+            </div>
+          </div>
+          <div ng-show="vm.activeTab === 'flights'">
+            <div class="row">
+              <div class="col-md-6 mb-3" ng-repeat="f in vm.flights">
+                <div class="card h-100 shadow-sm">
+                  <div class="card-body">
+                    <h5 class="card-title">{{f.airline}}: {{f.src}} 	 {{f.dest}}</h5>
+                    <p class="card-text mb-1"><strong>Departure:</strong> {{f.departure}}</p>
+                    <p class="card-text mb-1"><strong>Arrival:</strong> {{f.arrival}}</p>
+                    <p class="card-text mb-1"><strong>Price:</strong> 	{{f.price}}</p>
+                    <button class="btn btn-success w-100 mt-2" ng-click="vm.openBookingModal(f, 'flight')"><i class="bi bi-check-circle"></i> Book</button>
+                  </div>
+                </div>
+              </div>
+              <div ng-if="vm.flights.length === 0" class="text-center text-muted mt-3">
+                <i class="bi bi-exclamation-circle"></i> No flights found.
               </div>
             </div>
           </div>
@@ -145,16 +183,109 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.js"></script>
   <script src="../js/app.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-EXAMPLEKEY"></script>
   <script>
-    angular.module('travelApp')
-      .controller('TransportController').prototype.bookTransport = function(transport) {
-        var name = prompt('Enter your name to book:');
-        if (!name) return alert('Booking cancelled.');
-        var mobile = prompt('Enter your mobile number:');
-        if (!mobile) return alert('Booking cancelled.');
-        alert('Booking successful for ' + transport.name + '!\nName: ' + name + '\nMobile: ' + mobile);
-      };
+    // OpenStreetMap (Leaflet) loader for Madurai local transport
+    function loadMaduraiMap() {
+      var mapDiv = document.getElementById('maduraiMap');
+      if (!mapDiv) return;
+      // Remove any previous map instance
+      if (window._maduraiLeafletMap) {
+        window._maduraiLeafletMap.remove();
+      }
+      var map = L.map('maduraiMap').setView([9.9252, 78.1198], 12);
+      window._maduraiLeafletMap = map;
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+      // Get stops from AngularJS mock data
+      var buses = [], autos = [];
+      if (window.angular) {
+        var el = document.querySelector('[ng-controller]');
+        if (el) {
+          var scope = angular.element(el).scope();
+          var localTransports = scope && scope.vm && scope.vm.localTransports ? scope.vm.localTransports : [];
+          localTransports.forEach(function(route) {
+            if (route.stops && Array.isArray(route.stops)) {
+              route.stops.forEach(function(stop) {
+                if (route.mode === 'bus') buses.push(stop);
+                if (route.mode === 'auto') autos.push(stop);
+              });
+            }
+          });
+        }
+      }
+      // Remove duplicates by name
+      function uniqueByName(arr) {
+        var seen = {};
+        return arr.filter(function(x) {
+          if (seen[x.name]) return false;
+          seen[x.name] = true;
+          return true;
+        });
+      }
+      buses = uniqueByName(buses);
+      autos = uniqueByName(autos);
+      // Red marker for bus stops, blue for share auto stops
+      buses.forEach(function(stop) {
+        L.circleMarker([stop.lat, stop.lng], {
+          color: 'red',
+          radius: 8,
+          fillColor: 'red',
+          fillOpacity: 0.7
+        }).addTo(map).bindPopup('<b>Bus Stop:</b> ' + stop.name);
+      });
+      autos.forEach(function(stop) {
+        L.circleMarker([stop.lat, stop.lng], {
+          color: 'blue',
+          radius: 8,
+          fillColor: 'blue',
+          fillOpacity: 0.7
+        }).addTo(map).bindPopup('<b>Share Auto Stop:</b> ' + stop.name);
+      });
+    }
+    window.addEventListener('load', function() {
+      setTimeout(loadMaduraiMap, 1000);
+    });
   </script>
+  <!-- Booking Modal -->
+  <!-- Professional Booking Modal -->
+  <div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form class="modal-content" ng-submit="vm.confirmBooking()" ng-controller="TransportController as vm">
+        <div class="modal-header">
+          <h5 class="modal-title">Book {{vm.selectedType | uppercase}}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label>Source</label>
+            <input type="text" class="form-control" ng-model="vm.bookingForm.source" required>
+          </div>
+          <div class="mb-3">
+            <label>Destination</label>
+            <input type="text" class="form-control" ng-model="vm.bookingForm.destination" required>
+          </div>
+          <div class="mb-3">
+            <label>Date of Departure</label>
+            <input type="date" class="form-control" ng-model="vm.bookingForm.date" required>
+          </div>
+          <div class="mb-3">
+            <label>Name</label>
+            <input type="text" class="form-control" ng-model="vm.bookingForm.name" required>
+          </div>
+          <div class="mb-3">
+            <label>Mobile No</label>
+            <input type="text" class="form-control" ng-model="vm.bookingForm.mobile" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <script src="../js/transport.js"></script>
 </body>
 </html>

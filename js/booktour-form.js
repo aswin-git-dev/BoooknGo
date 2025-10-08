@@ -1,22 +1,22 @@
-// BookHotelController for bookhotel-form.html
+// BookTourFormController for booktour-form.html
 angular.module('travelApp')
-  .controller('BookHotelController', function($http) {
+  .controller('BookTourFormController', function($http, $window) {
     var vm = this;
-    var hotel = JSON.parse(localStorage.getItem('selectedHotel')) || {};
+    var tour = JSON.parse(localStorage.getItem('selectedTour')) || {};
     var userid = localStorage.getItem('userid');
     vm.form = {
-      hotelName: hotel.name,
-      city: hotel.city,
-      price: hotel.price,
+      tourName: tour.tourName || tour.name,
+      roomName: tour.roomName || (tour.room ? tour.room.name : ''),
+      transportMode: tour.transportMode || (tour.transport ? tour.transport.mode : ''),
+      total: tour.total,
       userid: userid
     };
-    vm.bookHotel = function() {
+    vm.bookTour = function() {
       if (!vm.form.name || !vm.form.email || !vm.form.phone) {
         vm.errorMessage = 'All fields are required.';
         vm.successMessage = '';
         return;
       }
-      // Basic email and phone validation
       var emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
       var phonePattern = /^\d{10}$/;
       if (!emailPattern.test(vm.form.email)) {
@@ -29,12 +29,12 @@ angular.module('travelApp')
         vm.successMessage = '';
         return;
       }
-      $http.post('http://localhost:5000/api/bookedhotels', vm.form)
+      $http.post('http://localhost:5000/api/bookedtours', vm.form)
         .then(function(res) {
-          vm.successMessage = 'Hotel booked successfully! Redirecting...';
+          vm.successMessage = 'Tour booked successfully! Redirecting...';
           vm.errorMessage = '';
           setTimeout(function() {
-            window.location.href = 'bookhotel.html';
+            $window.location.href = 'tourbook.html';
           }, 1200);
         })
         .catch(function() {

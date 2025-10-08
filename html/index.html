@@ -8,44 +8,126 @@
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
 </head>
 <body ng-controller="LoginController as vm" class="bg-light d-flex align-items-center justify-content-center" style="height:100vh;">
-  <div class="card shadow-lg p-4" style="min-width:350px;">
+  <div class="card shadow-lg p-4 animate__animated animate__fadeIn" style="min-width:350px;max-width:400px;width:100%;">
     <div class="text-center mb-4">
       <i class="bi bi-person-circle display-4 text-primary"></i>
-      <h2 class="mb-0">BookNGo Login</h2>
+      <h2 class="mb-0">BookNGo</h2>
     </div>
-    <form ng-submit="vm.login()">
-      <div class="mb-3">
-        <label class="form-label">Username</label>
-        <input type="text" ng-model="vm.user.username" class="form-control" required>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password" ng-model="vm.user.password" class="form-control" required>
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Login</button>
-    </form>
-    <div ng-if="vm.errorMessage" class="alert alert-danger mt-3">{{vm.errorMessage}}</div>
+    <ul class="nav nav-tabs mb-3">
+      <li class="nav-item">
+        <button class="nav-link" ng-class="{active: vm.tab === 'login'}" ng-click="vm.tab = 'login'">Login</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" ng-class="{active: vm.tab === 'signup'}" ng-click="vm.tab = 'signup'">Sign Up</button>
+      </li>
+    </ul>
+    <div ng-show="vm.tab === 'login'">
+      <form ng-submit="vm.login()" autocomplete="off">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" ng-model="vm.loginUser.username" class="form-control" required placeholder="Enter your username">
+        </div>
+        <div class="mb-3 position-relative">
+          <label class="form-label">Password</label>
+          <input type="password" ng-model="vm.loginUser.password" class="form-control" id="loginPassword" required placeholder="Enter your password">
+          <button type="button" class="btn btn-sm btn-link position-absolute top-0 end-0 mt-4 me-2" style="z-index:2;" ng-click="vm.togglePassword('loginPassword', $event)"><i class='bi bi-eye'></i></button>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 mb-2">Login</button>
+      </form>
+    </div>
+    <div ng-show="vm.tab === 'signup'">
+      <form ng-submit="vm.signup()" autocomplete="off">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" ng-model="vm.signupUser.username" class="form-control" required placeholder="Choose a username">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" ng-model="vm.signupUser.email" class="form-control" required placeholder="Enter your email">
+        </div>
+        <div class="mb-3 position-relative">
+          <label class="form-label">Password</label>
+          <input type="password" ng-model="vm.signupUser.password" class="form-control" id="signupPassword" required placeholder="Create a password">
+          <button type="button" class="btn btn-sm btn-link position-absolute top-0 end-0 mt-4 me-2" style="z-index:2;" ng-click="vm.togglePassword('signupPassword', $event)"><i class='bi bi-eye'></i></button>
+        </div>
+        <button type="submit" class="btn btn-outline-primary w-100">Sign Up</button>
+      </form>
+    </div>
+    <div ng-if="vm.errorMessage" class="alert alert-danger mt-3 animate__animated animate__fadeInDown">{{vm.errorMessage}}</div>
+    <div ng-if="vm.successMessage" class="alert alert-success mt-3 animate__animated animate__fadeInDown">{{vm.successMessage}}</div>
   </div>
   <script>
     angular.module('travelApp', [])
-      .controller('LoginController', function($http, $window) {
+      .controller('LoginController', function($http, $window, $timeout) {
         var vm = this;
-        vm.user = {};
+        vm.tab = 'login';
+        vm.loginUser = {};
+        vm.signupUser = {};
+        vm.errorMessage = '';
+        vm.successMessage = '';
+        vm.togglePassword = function(id, $event) {
+          var p = document.getElementById(id);
+          if (p) {
+            p.type = p.type === 'password' ? 'text' : 'password';
+            $event.target.innerHTML = p.type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+          }
+        };
         vm.login = function() {
-          if (!vm.user.username || !vm.user.password) {
+          if (!vm.loginUser.username || !vm.loginUser.password) {
             vm.errorMessage = 'All fields are required.';
+            vm.successMessage = '';
             return;
           }
-          $http.post('http://localhost:5000/api/users', vm.user)
+          $http.post('http://localhost:5000/api/login', {
+            username: vm.loginUser.username,
+            password: vm.loginUser.password
+          })
             .then(function(res) {
               localStorage.setItem('userid', res.data._id);
-              $window.location.href = 'tourbook.html';
+              vm.errorMessage = '';
+              vm.successMessage = 'Login successful! Redirecting...';
+              $timeout(function() {
+                $window.location.href = 'tourbook.html';
+              }, 1000);
             })
-            .catch(function() {
-              vm.errorMessage = 'Signup failed. Try again.';
+            .catch(function(err) {
+              vm.errorMessage = (err.data && err.data.message) ? err.data.message : 'Login failed. Try again.';
+              vm.successMessage = '';
+            });
+        };
+        vm.signup = function() {
+          if (!vm.signupUser.username || !vm.signupUser.password || !vm.signupUser.email) {
+            vm.errorMessage = 'All fields are required for signup.';
+            vm.successMessage = '';
+            return;
+          }
+          // Basic email validation
+          var emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+          if (!emailPattern.test(vm.signupUser.email)) {
+            vm.errorMessage = 'Enter a valid email address.';
+            vm.successMessage = '';
+            return;
+          }
+          $http.post('http://localhost:5000/api/users', {
+            username: vm.signupUser.username,
+            password: vm.signupUser.password,
+            email: vm.signupUser.email
+          })
+            .then(function(res) {
+              vm.successMessage = 'Signup successful! You can now login.';
+              vm.errorMessage = '';
+              $timeout(function() {
+                vm.tab = 'login';
+                vm.signupUser = {};
+              }, 700);
+            })
+            .catch(function(err) {
+              vm.errorMessage = (err.data && err.data.message) ? err.data.message : 'Signup failed. Try again.';
+              vm.successMessage = '';
             });
         };
       });
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"></script>
 </body>
 </html>

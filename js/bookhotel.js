@@ -40,10 +40,11 @@ const transportSchema = new mongoose.Schema({
 const Transport = mongoose.model("Transport", transportSchema);
 
 // User Schema
+const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
-    username: String,
-    password: String,
-    email: String,
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    email: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
 });
 const User = mongoose.model("User", userSchema);
@@ -77,9 +78,39 @@ const BookedHotel = mongoose.model("BookedHotel", bookedHotelSchema, "bookedhote
 // USER ENDPOINTS
 app.post("/api/users", async (req, res) => {
     try {
-        const newUser = new User(req.body);
+        const { username, password, email } = req.body;
+        if (!username || !password || !email) {
+            return res.status(400).json({ message: "All fields are required." });
+        }
+        const existing = await User.findOne({ username });
+        if (existing) {
+            return res.status(409).json({ message: "Username already exists." });
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ username, password: hashedPassword, email });
         await newUser.save();
-        res.status(201).json(newUser);
+        res.status(201).json({ _id: newUser._id, username: newUser.username, email: newUser.email });
+    } catch (err) {
+        res.status(500).json({ message: "Error", err });
+    }
+});
+
+// LOGIN ENDPOINT
+app.post("/api/login", async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) {
+            return res.status(400).json({ message: "Username and password required" });
+        }
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(401).json({ message: "Invalid username or password" });
+        }
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) {
+            return res.status(401).json({ message: "Invalid username or password" });
+        }
+        res.json({ _id: user._id, username: user.username, email: user.email });
     } catch (err) {
         res.status(500).json({ message: "Error", err });
     }

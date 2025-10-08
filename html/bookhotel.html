@@ -72,7 +72,7 @@
                       <p class="card-text mb-1"><i class="bi bi-geo-alt"></i> {{hotel.city}}</p>
                       <p class="card-text mb-1"><i class="bi bi-currency-rupee"></i> {{hotel.price}}</p>
                       <p class="card-text">{{hotel.description}}</p>
-                      <button class="btn btn-success w-100 mt-2" ng-click="vm.bookHotel(hotel)"><i class="bi bi-check-circle"></i> Book</button>
+                      <button class="btn btn-success w-100 mt-2" ng-click="vm.goToBookingForm(hotel)"><i class="bi bi-check-circle"></i> Book</button>
                     </div>
                   </div>
                 </div>
@@ -87,38 +87,17 @@
         
           <script>
            angular.module("travelApp", [])
-  .controller("BookingController", function($scope, $window) {
+  .controller("BookingController", function($scope, $http, $window) {
     var vm = this;
-    // Static hotel data
+    // Realistic hotel data (Indian cities)
     vm.hotels = [
-      {
-        name: "Sea View Resort",
-        city: "Goa",
-        price: 3500,
-        image: "../img/sea shore.jpg",
-        description: "Beachfront resort with pool and spa."
-      },
-      {
-        name: "Mountain Escape",
-        city: "Ooty",
-        price: 2500,
-        image: "../img/mountain beach.jpg",
-        description: "Cozy stay in the hills with scenic views."
-      },
-      {
-        name: "Island Paradise",
-        city: "Andaman",
-        price: 5000,
-        image: "../img/Island.jpg",
-        description: "Luxury island resort with private beach."
-      },
-      {
-        name: "City Comfort",
-        city: "Chennai",
-        price: 1800,
-        image: "../img/private beach.jpg",
-        description: "Modern hotel in the heart of the city."
-      }
+      { name: "The Residency Towers", city: "Chennai", price: 3200, image: "../img/private beach.jpg", description: "Luxury stay in Chennai city center." },
+      { name: "Taj Coromandel", city: "Chennai", price: 5400, image: "../img/sea shore.jpg", description: "5-star hotel with fine dining." },
+      { name: "Le Meridien", city: "Coimbatore", price: 4100, image: "../img/mountain beach.jpg", description: "Modern hotel near airport." },
+      { name: "Radisson Blu", city: "Bangalore", price: 4800, image: "../img/Island.jpg", description: "Business hotel in Bangalore." },
+      { name: "Hyatt Place", city: "Hyderabad", price: 3900, image: "../img/sea shore.jpg", description: "Comfort and convenience in Hyderabad." },
+      { name: "Sangam Hotel", city: "Trichy", price: 2500, image: "../img/private beach.jpg", description: "Popular hotel near Srirangam." },
+      { name: "Heritage Madurai", city: "Madurai", price: 3700, image: "../img/Island.jpg", description: "Resort-style stay in Madurai." }
     ];
     vm.cities = Array.from(new Set(vm.hotels.map(h => h.city)));
     vm.filter = { city: '', price: '' };
@@ -135,12 +114,72 @@
       vm.filter = { city: '', price: '' };
       vm.filteredHotels = vm.hotels.slice();
     };
-    vm.bookHotel = function(hotel) {
-      var selectedHotel = Object.assign({}, hotel);
-      localStorage.setItem('selectedHotel', JSON.stringify(selectedHotel));
+    // Redirect to booking form with hotel info
+    vm.goToBookingForm = function(hotel) {
+      localStorage.setItem('selectedHotel', JSON.stringify(hotel));
       $window.location.href = 'bookhotel-form.html';
+    };
+    vm.submitBooking = function() {
+      if (!vm.booking.name || !vm.booking.phone || !vm.booking.address || !vm.booking.city) {
+        alert('Please fill all details.');
+        return;
+      }
+      var bookingData = {
+        name: vm.booking.name,
+        phone: vm.booking.phone,
+        address: vm.booking.address,
+        city: vm.booking.city,
+        hotel: vm.selectedHotel.name,
+        hotelCity: vm.selectedHotel.city,
+        price: vm.selectedHotel.price
+      };
+      $http.post('http://localhost:5000/api/bookedhotels', bookingData)
+        .then(function() {
+          alert('Hotel booked successfully!');
+          var modal = bootstrap.Modal.getInstance(document.getElementById('hotelBookingModal'));
+          modal.hide();
+        })
+        .catch(function() {
+          alert('Booking failed. Please try again.');
+        });
     };
   });
           </script>
     </body>
+    <!-- Hotel Booking Modal -->
+    <div class="modal fade" id="hotelBookingModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form class="modal-content" ng-submit="vm.submitBooking()" ng-controller="BookingController as vm">
+          <div class="modal-header">
+            <h5 class="modal-title">Book Hotel: {{vm.selectedHotel.name}}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2"><strong>Description:</strong> {{vm.selectedHotel.description}}</div>
+            <div class="mb-2"><strong>City:</strong> {{vm.selectedHotel.city}}</div>
+            <div class="mb-2"><strong>Price:</strong> ₹{{vm.selectedHotel.price}}</div>
+            <hr>
+            <div class="mb-3">
+              <label>Name</label>
+              <input type="text" class="form-control" ng-model="vm.booking.name" required>
+            </div>
+            <div class="mb-3">
+              <label>Phone No</label>
+              <input type="text" class="form-control" ng-model="vm.booking.phone" required>
+            </div>
+            <div class="mb-3">
+              <label>Address</label>
+              <input type="text" class="form-control" ng-model="vm.booking.address" required>
+            </div>
+            <div class="mb-3">
+              <label>City</label>
+              <input type="text" class="form-control" ng-model="vm.booking.city" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Book</button>
+          </div>
+        </form>
+      </div>
+    </div>
     </html>
